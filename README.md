@@ -22,6 +22,8 @@ nmap --min-rate 4500 --max-rtt-timeout 1500ms -p- -sSCV <target>
 * Saves output separately for each target, easy to analyze later
 * Keeps your CPU safe — no flooding, just smart parallel scans
 
+![Description of GIF](https://s8.ezgif.com/tmp/ezgif-84aa0707973366.gif)
+
 ### Usage
 
 ```bash
