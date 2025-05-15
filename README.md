@@ -25,9 +25,13 @@ nmap --min-rate 4500 --max-rtt-timeout 1500ms -p- -sSCV <target>
 ### Usage
 
 ```bash
-python3 nmap_bomber.py subdomains.txt
+python3 nmap_bomber.py subdomains.txt &
 ```
+i prefer 
 
+```bash
+nohup python3 nmap_bomber.py subdomains.txt &
+```
 Feed it your list, sit back, and watch the magic happen.
 
 ---
