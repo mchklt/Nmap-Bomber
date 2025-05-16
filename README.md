@@ -23,7 +23,7 @@ nmap --min-rate 4500 --max-rtt-timeout 1500ms -p- -sSCV <target>
 * Keeps your CPU safe — no flooding, just smart parallel scans
 
 using that one i scanned 30 host in 3m
-![Description of GIF](https://s8.ezgif.com/tmp/ezgif-84aa0707973366.gif)
+[![bskR4.gif](https://s14.gifyu.com/images/bskR4.gif)](https://gifyu.com/image/bskR4)
 
 
 ### Usage
