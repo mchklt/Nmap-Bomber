@@ -1,5 +1,5 @@
 # Nmap-Bomber
-Port scanning is crucial in recon, but running it manually on big scopes? Nope. That’s why I made **Nmap Bomber** — a badass Python script that runs fast and furious parallel nmap scans on your subdomains.
+Port scanning is crucial in recon, but running it manually on big scopes? Nope. That’s why I made **Nmap Bomber** — a Python script that runs fast and furious parallel nmap scans on your subdomains.
 **Why Nmap Bomber?**
 
 Because it bombs targets with speedy scans without frying your machine. It keeps up to **15 scans running at once**, starting a new scan as soon as one finishes.
