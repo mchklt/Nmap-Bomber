@@ -6,7 +6,9 @@ import subprocess
 import queue
 import threading
 import sys
+import re
 from typing import List, Dict, Optional
+from collections import Counter
 
 def read_subdomains(filename: str) -> List[str]:
     try:
@@ -18,6 +20,50 @@ def read_subdomains(filename: str) -> List[str]:
     except Exception as e:
         print(f"Error reading file: {e}")
         return []
+
+def parse_nmap_output(content: str) -> List[tuple]:
+    results = []
+    blocks = content.split("Starting Nmap")
+    for block in blocks:
+        host_match = re.search(r"Nmap scan report for (.+)", block)
+        if host_match:
+            host = host_match.group(1).strip()
+            host = re.sub(r"\s*\(.+?\)", "", host)  # remove IP inside parentheses
+            ports = re.findall(r"(\d+)/tcp\s+open", block)
+            for port in ports:
+                results.append((host, port))
+    return results
+
+def filter_hosts(results: List[tuple], max_occurrences: int = 100) -> List[tuple]:
+    host_counts = Counter(host for host, port in results)
+    filtered = [(host, port) for host, port in results if host_counts[host] <= max_occurrences]
+    return filtered
+
+def nuclei_file(subdomains: List[str]) -> None:
+    all_results = []
+    for subdomain in subdomains:
+        output_file = f"{subdomain}.out"
+        try:
+            with open(output_file, 'r') as f:
+                content = f.read()
+                results = parse_nmap_output(content)
+                all_results.extend(results)
+        except FileNotFoundError:
+            print(f"Output file for {subdomain} not found.")
+            continue
+        except Exception as e:
+            print(f"Error reading output file for {subdomain}: {e}")
+            continue
+
+    filtered_results = filter_hosts(all_results)
+    
+    try:
+        with open("good_ports.txt", "w") as f:
+            for host, port in filtered_results:
+                f.write(f"{host}:{port}\n")
+        print("Created good_ports.txt with filtered host:port combinations.")
+    except Exception as e:
+        print(f"Error writing to good_ports.txt: {e}")
 
 class SubdomainScanner:
     def __init__(self, max_concurrent: int = 10):
@@ -81,7 +127,7 @@ class SubdomainScanner:
                     print(f"Error processing queue: {e}")
             time.sleep(0.5)
 
-    def start(self) -> None:
+    def start(self, subdomains: List[str]) -> None:
         self.running = True
         monitor_thread = threading.Thread(target=self.monitor_processes)
         monitor_thread.daemon = True
@@ -90,6 +136,7 @@ class SubdomainScanner:
             self.queue.join()
             while self.active_processes:
                 time.sleep(1)
+            nuclei_file(subdomains)  # Call nuclei_file after all scans are complete
         except KeyboardInterrupt:
             print("\nShutting down gracefully...")
         finally:
@@ -118,7 +165,7 @@ def main():
     print(f"Found {total} subdomains to scan. Starting scanner with {max_concurrent_scans} concurrent scans.")
     scanner = SubdomainScanner(max_concurrent=max_concurrent_scans)
     scanner.add_subdomains(subdomains)
-    scanner.start()
+    scanner.start(subdomains)
     print("All scans completed!")
 
 if __name__ == "__main__":
